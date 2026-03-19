@@ -1,0 +1,61 @@
+CREATE TABLE users (
+  id TEXT PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  name TEXT NOT NULL,
+  password_hash TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE boards (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  revision INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE TABLE columns (
+  id TEXT PRIMARY KEY,
+  board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  position INTEGER NOT NULL
+);
+
+CREATE TABLE cards (
+  id TEXT PRIMARY KEY,
+  column_id TEXT NOT NULL REFERENCES columns(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL DEFAULT '',
+  assignee TEXT NOT NULL DEFAULT '',
+  due_date DATE,
+  position INTEGER NOT NULL
+);
+
+CREATE TABLE tags (
+  id TEXT PRIMARY KEY,
+  board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  color TEXT NOT NULL,
+  UNIQUE(board_id, name)
+);
+
+CREATE TABLE card_tags (
+  card_id TEXT NOT NULL REFERENCES cards(id) ON DELETE CASCADE,
+  tag_id TEXT NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
+  PRIMARY KEY (card_id, tag_id)
+);
+
+CREATE TABLE comments (
+  id TEXT PRIMARY KEY,
+  card_id TEXT NOT NULL REFERENCES cards(id) ON DELETE CASCADE,
+  author_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  body TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE attachments (
+  id TEXT PRIMARY KEY,
+  card_id TEXT NOT NULL REFERENCES cards(id) ON DELETE CASCADE,
+  uploaded_by TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  file_name TEXT NOT NULL,
+  file_url TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
